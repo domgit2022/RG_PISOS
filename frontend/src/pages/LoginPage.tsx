@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
 import { useBranding } from "@/hooks/useBranding";
-import logoFallback from "@/assets/logo-rgpisos.svg";
+import logoFallback from "@/assets/logo-rgpisos.png";
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -47,7 +47,7 @@ export function LoginPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg border border-outline-variant/40 bg-surface-container-lowest p-8 shadow-sm"
       >
-        <img src={logoUrl ?? logoFallback} alt={nombreComercial} className="mx-auto mb-5 h-36 w-36 object-contain" />
+        <img src={logoUrl ?? logoFallback} alt={nombreComercial} className="mx-auto mb-5 h-28 w-auto max-w-[280px] object-contain" />
         <p className="mb-6 text-center text-sm text-on-surface-variant">{t("login.title")}</p>
 
         <label className="mb-1 block text-sm font-medium">{t("login.username")}</label>

@@ -19,7 +19,7 @@ import {
 import { useAuthStore } from "@/stores/auth-store";
 import { useBranding } from "@/hooks/useBranding";
 import { ConexionServidor } from "@/components/ConexionServidor";
-import logoFallback from "@/assets/logo-rgpisos.svg";
+import logoFallback from "@/assets/logo-rgpisos.png";
 
 const navItems = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true, permiso: null },
@@ -62,7 +62,7 @@ export function AppLayout() {
         >
           <Menu size={22} />
         </button>
-        <img src={logoSrc} alt={nombreComercial} className="h-12 w-12 object-contain" />
+        <img src={logoSrc} alt={nombreComercial} className="h-10 w-auto max-w-[140px] object-contain" />
         <div className="w-[22px]" />
       </header>
 
@@ -77,7 +77,7 @@ export function AppLayout() {
       >
         <div>
           <div className="mb-6 flex items-center justify-between py-2 md:justify-center">
-            <img src={logoSrc} alt={nombreComercial} className="h-20 w-20 object-contain md:h-14 md:w-14 lg:h-32 lg:w-32" />
+            <img src={logoSrc} alt={nombreComercial} className="h-16 w-auto max-w-[200px] object-contain md:h-12 lg:h-20" />
             <button onClick={() => setMenuAbierto(false)} className="text-on-surface-variant md:hidden" aria-label={t("common.close")}>
               <X size={20} />
             </button>

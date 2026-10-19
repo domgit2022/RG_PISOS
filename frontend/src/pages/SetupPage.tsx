@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
 import { useBranding } from "@/hooks/useBranding";
-import logoFallback from "@/assets/logo-rgpisos.svg";
+import logoFallback from "@/assets/logo-rgpisos.png";
 
 export function SetupPage() {
   const { t } = useTranslation();
@@ -46,7 +46,7 @@ export function SetupPage() {
         }}
         className="w-full max-w-md rounded-lg border border-outline-variant/40 bg-surface-container-lowest p-8 shadow-sm"
       >
-        <img src={logoUrl ?? logoFallback} alt={nombreComercial} className="mb-4 h-24 w-24 object-contain" />
+        <img src={logoUrl ?? logoFallback} alt={nombreComercial} className="mb-4 h-20 w-auto max-w-[240px] object-contain" />
         <h1 className="mb-1 text-xl font-semibold text-on-surface">{t("setup.title")}</h1>
         <p className="mb-6 text-sm text-on-surface-variant">{t("setup.subtitle")}</p>
 

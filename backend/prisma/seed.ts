@@ -170,14 +170,14 @@ async function main() {
       ext === ".svg" ? "image/svg+xml" : ext === ".webp" ? "image/webp" : ext === ".jpg" || ext === ".jpeg" ? "image/jpeg" : "image/png";
     const buffer = fs.existsSync(rutaLocal)
       ? fs.readFileSync(rutaLocal)
-      : fs.readFileSync(path.join(__dirname, "seed-assets/logo-default.svg"));
+      : fs.readFileSync(path.join(__dirname, "seed-assets/logo-default.png"));
 
     const logoUrl = await subirArchivoPublico(buffer, `migrado-${nombreArchivo}`, contentType);
     await prisma.configuracion.update({ where: { id: configActual.id }, data: { logoUrl } });
     console.log(`Logo migrado de disco local a Supabase Storage: ${logoUrl}`);
   } else if (configActual && !configActual.logoUrl) {
-    const buffer = fs.readFileSync(path.join(__dirname, "seed-assets/logo-default.svg"));
-    const logoUrl = await subirArchivoPublico(buffer, "logo-default.svg", "image/svg+xml");
+    const buffer = fs.readFileSync(path.join(__dirname, "seed-assets/logo-default.png"));
+    const logoUrl = await subirArchivoPublico(buffer, "logo-default.png", "image/png");
     await prisma.configuracion.update({ where: { id: configActual.id }, data: { logoUrl } });
   }
 
