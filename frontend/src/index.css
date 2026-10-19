@@ -4,25 +4,25 @@
   --font-sans: "Inter", system-ui, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
 
-  --color-surface: #f8f9ff;
+  --color-surface: #f7f7f6;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #eff4ff;
-  --color-surface-container: #e5eeff;
-  --color-surface-container-high: #dce9ff;
-  --color-on-surface: #0b1c30;
-  --color-on-surface-variant: #424752;
-  --color-outline: #727783;
-  --color-outline-variant: #c2c6d4;
+  --color-surface-container-low: #f1f0ee;
+  --color-surface-container: #e9e8e6;
+  --color-surface-container-high: #e0dfdc;
+  --color-on-surface: #1f1f1e;
+  --color-on-surface-variant: #4a4a48;
+  --color-outline: #7a7a78;
+  --color-outline-variant: #c9c8c5;
 
-  --color-primary: #00478d;
+  --color-primary: #c96f00;
   --color-on-primary: #ffffff;
-  --color-primary-container: #005eb8;
-  --color-on-primary-container: #c8daff;
+  --color-primary-container: #f39200;
+  --color-on-primary-container: #3d2200;
 
-  --color-secondary: #006a68;
+  --color-secondary: #5f5f5e;
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #79f2f0;
-  --color-on-secondary-container: #006e6d;
+  --color-secondary-container: #e3e3e2;
+  --color-on-secondary-container: #3f3f3e;
 
   --color-error: #ba1a1a;
   --color-on-error: #ffffff;

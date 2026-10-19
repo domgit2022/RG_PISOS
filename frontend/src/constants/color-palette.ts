@@ -11,6 +11,8 @@ export interface ColorSwatch {
 }
 
 export const PALETA_COLORES_SUGERIDOS: ColorSwatch[] = [
+  { nombre: "Naranja RG", hex: "#C96F00" },
+  { nombre: "Gris RG", hex: "#5F5F5E" },
   { nombre: "Azul clínico", hex: "#00478D" },
   { nombre: "Azul corporativo", hex: "#1D4ED8" },
   { nombre: "Índigo", hex: "#4338CA" },

@@ -91,12 +91,14 @@ async function main() {
   });
 
   const unidades: Array<[string, string, string]> = [
-    ["UNIDAD", "Unidad", "Unit"],
-    ["KG", "Kilogramo", "Kilogram"],
-    ["GRAMO", "Gramo", "Gram"],
-    ["LITRO", "Litro", "Liter"],
-    ["ML", "Mililitro", "Milliliter"],
+    ["M2", "Metro cuadrado (m²)", "Square meter (m²)"],
     ["CAJA", "Caja", "Box"],
+    ["UNIDAD", "Unidad", "Unit"],
+    ["METRO_LINEAL", "Metro lineal", "Linear meter"],
+    ["BOLSA", "Bolsa", "Bag"],
+    ["KG", "Kilogramo", "Kilogram"],
+    ["LITRO", "Litro", "Liter"],
+    ["BALDE", "Balde", "Bucket"],
     ["PAQUETE", "Paquete", "Pack"],
   ];
   for (const [codigo, nombreEs, nombreEn] of unidades) {
@@ -109,6 +111,32 @@ async function main() {
       where: { namespace_clave_idioma: { namespace: "unidad_medida", clave: codigo, idioma: "EN" } },
       update: { valor: nombreEn },
       create: { namespace: "unidad_medida", clave: codigo, idioma: "EN", valor: nombreEn },
+    });
+  }
+
+  // Categorías iniciales del rubro. Ids fijos para que el seed se pueda
+  // correr de nuevo sin duplicarlas (la tabla no tiene nombre único).
+  const categorias: Array<[string, string, string]> = [
+    ["cat-porcelanatos", "Porcelanatos", "Porcelain tiles"],
+    ["cat-ceramicos", "Cerámicos", "Ceramic tiles"],
+    ["cat-revestimientos", "Revestimientos de pared", "Wall tiles"],
+    ["cat-vinilicos", "Pisos vinílicos (SPC/LVT)", "Vinyl flooring (SPC/LVT)"],
+    ["cat-laminados", "Pisos laminados", "Laminate flooring"],
+    ["cat-madera", "Pisos de madera y deck", "Wood flooring and decking"],
+    ["cat-adhesivos", "Adhesivos y pastinas", "Adhesives and grout"],
+    ["cat-zocalos", "Zócalos y perfiles", "Skirting and trims"],
+    ["cat-accesorios", "Herramientas y accesorios", "Tools and accessories"],
+  ];
+  for (const [id, nombreEs, nombreEn] of categorias) {
+    await prisma.categoria.upsert({
+      where: { id },
+      update: {},
+      create: { id, nombre: nombreEs },
+    });
+    await prisma.traduccion.upsert({
+      where: { namespace_clave_idioma: { namespace: "categoria", clave: id, idioma: "EN" } },
+      update: { valor: nombreEn },
+      create: { namespace: "categoria", clave: id, idioma: "EN", valor: nombreEn },
     });
   }
 
@@ -146,9 +174,9 @@ async function main() {
   if (!configExistente) {
     await prisma.configuracion.create({
       data: {
-        nombreComercial: "Mi Comercio",
-        colorPrimario: "#00478D",
-        colorSecundario: "#006A68",
+        nombreComercial: "RG Pisos",
+        colorPrimario: "#C96F00",
+        colorSecundario: "#5F5F5E",
         monedaPredeterminada: "ARS",
         diasAlertaVencimiento: 15,
         idiomaPredeterminado: "ES",

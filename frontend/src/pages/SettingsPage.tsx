@@ -155,12 +155,12 @@ export function SettingsPage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <ColorSwatchPicker
               label={t("settings.primaryColor")}
-              value={form.colorPrimario ?? "#00478D"}
+              value={form.colorPrimario ?? "#C96F00"}
               onChange={(hex) => setForm((f) => ({ ...f, colorPrimario: hex }))}
             />
             <ColorSwatchPicker
               label={t("settings.secondaryColor")}
-              value={form.colorSecundario ?? "#006A68"}
+              value={form.colorSecundario ?? "#5F5F5E"}
               onChange={(hex) => setForm((f) => ({ ...f, colorSecundario: hex }))}
             />
           </div>
