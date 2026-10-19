@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <circle cx="256" cy="256" r="244" fill="#ffffff" stroke="#00478D" stroke-width="12"/>
+  <g fill="#00478D">
+    <rect x="146" y="150" width="104" height="104" rx="6"/>
+    <rect x="262" y="150" width="104" height="104" rx="6" fill-opacity="0.55"/>
+    <rect x="146" y="266" width="104" height="104" rx="6" fill-opacity="0.55"/>
+    <rect x="262" y="266" width="104" height="104" rx="6"/>
+  </g>
+  <text x="256" y="430" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#00478D" letter-spacing="4">RG PISOS</text>
+</svg>

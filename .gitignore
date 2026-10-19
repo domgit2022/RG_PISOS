@@ -1,0 +1,20 @@
+# Dependencias y compilados
+node_modules/
+dist/
+dist-ssr/
+backend/src/generated/
+
+# Variables de entorno (claves): NUNCA subirlas al repo
+.env
+.env.*
+!.env.example
+
+# Archivos subidos en local
+backend/uploads/
+
+# Logs y editor
+*.log
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea

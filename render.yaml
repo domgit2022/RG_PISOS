@@ -1,0 +1,64 @@
+services:
+  - type: web
+    name: rg-pisos-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install --include=dev --ignore-scripts && npm run build
+    startCommand: npm run prisma:deploy && npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: CORS_ORIGIN
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: branding
+      - key: REORDER_CHECK_CRON
+        value: "0 */6 * * *"
+      - key: EXPIRY_CHECK_CRON
+        value: "0 8 * * *"
+      - key: APP_TIMEZONE
+        value: America/Argentina/Buenos_Aires
+      - key: CRON_SECRET
+        generateValue: true
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: MAIL_RELAY_URL
+        sync: false
+      - key: MAIL_RELAY_SECRET
+        sync: false
+
+  - type: web
+    name: rg-pisos-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

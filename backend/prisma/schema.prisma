@@ -1,0 +1,542 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────
+
+enum Idioma {
+  ES
+  EN
+}
+
+enum Moneda {
+  ARS
+  USD
+  EUR
+}
+
+enum TipoMovimiento {
+  INGRESO
+  EGRESO_VENTA
+  AJUSTE
+  MERMA
+  TRANSFERENCIA_SALIDA
+  TRANSFERENCIA_ENTRADA
+  DEVOLUCION_CLIENTE
+}
+
+enum EstadoVenta {
+  CONFIRMADA
+  ANULADA
+}
+
+enum EstadoOrdenCompra {
+  PENDIENTE
+  RECIBIDA_PARCIAL
+  RECIBIDA_COMPLETA
+  CANCELADA
+}
+
+enum TipoAlerta {
+  STOCK_BAJO
+  VENCIMIENTO_PROXIMO
+  VENCIDO
+}
+
+enum NivelUrgencia {
+  INFO
+  ADVERTENCIA
+  CRITICO
+}
+
+enum EstadoAlerta {
+  PENDIENTE
+  VISTA
+  RESUELTA
+}
+
+enum FrecuenciaInforme {
+  DIARIO
+  SEMANAL
+  QUINCENAL
+  MENSUAL
+}
+
+// ─────────────────────────────────────────────────────────
+// Identidad, roles y permisos
+// ─────────────────────────────────────────────────────────
+
+model Rol {
+  id          String   @id @default(cuid())
+  nombre      String   @unique
+  descripcion String?
+  esSistema   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  usuarios  Usuario[]
+  permisos  RolPermiso[]
+
+  @@map("roles")
+}
+
+model Permiso {
+  id          String   @id @default(cuid())
+  clave       String   @unique
+  descripcion String?
+
+  roles RolPermiso[]
+
+  @@map("permisos")
+}
+
+model RolPermiso {
+  rolId     String
+  permisoId String
+  rol       Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  permiso   Permiso @relation(fields: [permisoId], references: [id], onDelete: Cascade)
+
+  @@id([rolId, permisoId])
+  @@map("rol_permisos")
+}
+
+model Usuario {
+  id             String    @id @default(cuid())
+  nombreCompleto String
+  username       String    @unique
+  email          String?   @unique
+  passwordHash   String
+  rolId          String
+  rol            Rol       @relation(fields: [rolId], references: [id], onDelete: Restrict)
+  activo         Boolean   @default(true)
+  /// Si recibe el mail diario de recordatorio de vencimientos próximos (ver
+  /// alerts.service). A diferencia de las alertas de stock bajo, este criterio
+  /// es independiente del rol: se marca usuario por usuario.
+  recibeAvisosVencimiento Boolean @default(false)
+  idiomaPreferido Idioma?
+  ultimoAcceso   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  movimientosStock  MovimientoStock[]
+  ventas            Venta[]
+  ordenesCompra     OrdenCompra[]
+  logsAuditoria     LogAuditoria[]
+  alertasResueltas  Alerta[]          @relation("AlertaResueltaPor")
+
+  @@map("usuarios")
+}
+
+model LogAuditoria {
+  id                String   @id @default(cuid())
+  usuarioId         String?
+  usuario           Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  fecha             DateTime @default(now())
+  accion            String
+  entidad           String
+  entidadId         String
+  valoresAnteriores Json?
+  valoresNuevos     Json?
+
+  @@index([entidad, entidadId])
+  @@index([usuarioId])
+  @@map("logs_auditoria")
+}
+
+// ─────────────────────────────────────────────────────────
+// Catálogo
+// ─────────────────────────────────────────────────────────
+
+model Categoria {
+  id               String      @id @default(cuid())
+  nombre           String
+  categoriaPadreId String?
+  categoriaPadre   Categoria?  @relation("SubCategorias", fields: [categoriaPadreId], references: [id], onDelete: SetNull)
+  subcategorias    Categoria[] @relation("SubCategorias")
+  activo           Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  productos Producto[]
+
+  @@index([categoriaPadreId])
+  @@map("categorias")
+}
+
+model Proveedor {
+  id                String   @id @default(cuid())
+  nombre            String
+  cuit              String?  @unique
+  contactoNombre    String?
+  telefono          String?
+  email             String?
+  direccion         String?
+  condicionesPago   String?
+  activo            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  productosPrincipal Producto[]
+  lotes              Lote[]
+  ordenesCompra      OrdenCompra[]
+
+  @@map("proveedores")
+}
+
+model UnidadMedida {
+  id        String  @id @default(cuid())
+  codigo    String  @unique
+  nombre    String
+  activo    Boolean @default(true)
+
+  productos Producto[]
+
+  @@map("unidades_medida")
+}
+
+model MedioPago {
+  id     String  @id @default(cuid())
+  nombre String  @unique
+  activo Boolean @default(true)
+
+  ventas Venta[]
+
+  @@map("medios_pago")
+}
+
+model Producto {
+  id                  String    @id @default(cuid())
+  sku                 String    @unique
+  codigoBarras        String?   @unique
+  nombre              String
+  descripcion         String?
+  categoriaId         String?
+  categoria           Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  marca               String?
+  unidadMedidaId      String
+  unidadMedida        UnidadMedida @relation(fields: [unidadMedidaId], references: [id], onDelete: Restrict)
+  proveedorPrincipalId String?
+  proveedorPrincipal  Proveedor? @relation(fields: [proveedorPrincipalId], references: [id], onDelete: SetNull)
+  imagenUrl           String?
+  controlaVencimiento Boolean   @default(false)
+  /// Cantidad de días antes de la fecha de vencimiento de un lote a partir de
+  /// la cual el job diario de recordatorio (ver alerts.service) empieza a
+  /// incluir este producto en el mail de vencimientos próximos.
+  diasAvisoVencimiento Int      @default(15)
+  controlaLote        Boolean   @default(false)
+  stockMinimo         Decimal   @default(0) @db.Decimal(14, 3)
+  puntoReposicion     Decimal   @default(0) @db.Decimal(14, 3)
+  stockMaximo         Decimal?  @db.Decimal(14, 3)
+  costoPromedio       Decimal   @default(0) @db.Decimal(14, 4)
+  activo              Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  lotes            Lote[]
+  movimientosStock MovimientoStock[]
+  precios          PrecioProducto[]
+  detallesVenta    DetalleVenta[]
+  detallesCompra   DetalleOrdenCompra[]
+  alertas          Alerta[]
+
+  @@index([categoriaId])
+  @@index([proveedorPrincipalId])
+  @@index([nombre])
+  @@map("productos")
+}
+
+// ─────────────────────────────────────────────────────────
+// Almacenes, ubicaciones y stock
+// ─────────────────────────────────────────────────────────
+
+model Almacen {
+  id          String   @id @default(cuid())
+  nombre      String
+  direccion   String?
+  esPrincipal Boolean  @default(false)
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ubicaciones      Ubicacion[]
+  lotes            Lote[]
+  movimientosStock MovimientoStock[]
+
+  @@map("almacenes")
+}
+
+model Ubicacion {
+  id                String     @id @default(cuid())
+  almacenId         String
+  almacen           Almacen    @relation(fields: [almacenId], references: [id], onDelete: Cascade)
+  nombre            String
+  ubicacionPadreId  String?
+  ubicacionPadre    Ubicacion? @relation("SubUbicaciones", fields: [ubicacionPadreId], references: [id], onDelete: SetNull)
+  subUbicaciones    Ubicacion[] @relation("SubUbicaciones")
+  activo            Boolean    @default(true)
+
+  lotes            Lote[]
+  movimientosStock MovimientoStock[]
+
+  @@index([almacenId])
+  @@map("ubicaciones")
+}
+
+/// Unidad de stock física: un lote real (con vencimiento) o, para productos
+/// que no controlan lote/vencimiento, un registro interno único por producto+almacén
+/// que actúa como "bin" de cantidad. Ver sección 4.4 de la spec: el stock actual
+/// de un producto siempre es la suma de cantidadActual de sus lotes activos.
+model Lote {
+  id                String    @id @default(cuid())
+  productoId        String
+  producto          Producto  @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  almacenId         String
+  almacen           Almacen   @relation(fields: [almacenId], references: [id], onDelete: Restrict)
+  ubicacionId       String?
+  ubicacion         Ubicacion? @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
+  numeroLote        String?
+  fechaVencimiento  DateTime? @db.Date
+  fechaIngreso      DateTime  @default(now())
+  cantidadInicial   Decimal   @db.Decimal(14, 3)
+  cantidadActual    Decimal   @db.Decimal(14, 3)
+  proveedorId       String?
+  proveedor         Proveedor? @relation(fields: [proveedorId], references: [id], onDelete: SetNull)
+  costoUnitario     Decimal   @db.Decimal(14, 4)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  movimientosStock MovimientoStock[]
+  alertas          Alerta[]
+
+  @@index([productoId, almacenId])
+  @@index([fechaVencimiento])
+  @@map("lotes")
+}
+
+model MovimientoStock {
+  id               String         @id @default(cuid())
+  productoId       String
+  producto         Producto       @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  loteId           String
+  lote             Lote           @relation(fields: [loteId], references: [id], onDelete: Restrict)
+  almacenId        String
+  almacen          Almacen        @relation(fields: [almacenId], references: [id], onDelete: Restrict)
+  ubicacionId      String?
+  ubicacion        Ubicacion?     @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
+  tipo             TipoMovimiento
+  cantidad         Decimal        @db.Decimal(14, 3)
+  stockResultante  Decimal        @db.Decimal(14, 3)
+  usuarioId        String
+  usuario          Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  fecha            DateTime       @default(now())
+  motivo           String?
+  ventaId          String?
+  venta            Venta?         @relation(fields: [ventaId], references: [id], onDelete: SetNull)
+  ordenCompraId    String?
+  ordenCompra      OrdenCompra?   @relation(fields: [ordenCompraId], references: [id], onDelete: SetNull)
+
+  @@index([productoId, fecha])
+  @@index([loteId])
+  @@map("movimientos_stock")
+}
+
+// ─────────────────────────────────────────────────────────
+// Precios
+// ─────────────────────────────────────────────────────────
+
+model ListaPrecio {
+  id      String   @id @default(cuid())
+  nombre  String   @unique
+  moneda  Moneda   @default(ARS)
+  activa  Boolean  @default(true)
+
+  precios          PrecioProducto[]
+  ventas           Venta[]
+  clientesPorDefecto Cliente[]
+
+  @@map("listas_precio")
+}
+
+/// Nunca se sobrescribe un precio: al cambiar, se cierra vigenteHasta del
+/// registro anterior y se crea uno nuevo, preservando el historial (spec 5.2).
+model PrecioProducto {
+  id                String      @id @default(cuid())
+  productoId        String
+  producto          Producto    @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  listaPrecioId     String
+  listaPrecio       ListaPrecio @relation(fields: [listaPrecioId], references: [id], onDelete: Cascade)
+  precio            Decimal     @db.Decimal(14, 2)
+  margenPorcentaje  Decimal?    @db.Decimal(6, 2)
+  vigenteDesde      DateTime    @default(now())
+  vigenteHasta      DateTime?
+  activo            Boolean     @default(true)
+
+  @@index([productoId, listaPrecioId, vigenteHasta])
+  @@map("precios_producto")
+}
+
+// ─────────────────────────────────────────────────────────
+// Ventas
+// ─────────────────────────────────────────────────────────
+
+model Cliente {
+  id                     String       @id @default(cuid())
+  nombre                 String
+  cuit                   String?
+  contacto               String?
+  telefono               String?
+  email                  String?
+  direccion              String?
+  listaPrecioPorDefectoId String?
+  listaPrecioPorDefecto  ListaPrecio? @relation(fields: [listaPrecioPorDefectoId], references: [id], onDelete: SetNull)
+  activo                 Boolean      @default(true)
+  createdAt              DateTime     @default(now())
+
+  ventas Venta[]
+
+  @@map("clientes")
+}
+
+model Venta {
+  id               String      @id @default(cuid())
+  fecha            DateTime    @default(now())
+  usuarioId        String
+  usuario          Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  clienteId        String?
+  cliente          Cliente?    @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  listaPrecioId    String
+  listaPrecio      ListaPrecio @relation(fields: [listaPrecioId], references: [id], onDelete: Restrict)
+  medioPagoId      String
+  medioPago        MedioPago   @relation(fields: [medioPagoId], references: [id], onDelete: Restrict)
+  subtotal         Decimal     @db.Decimal(14, 2)
+  descuento        Decimal     @default(0) @db.Decimal(14, 2)
+  total            Decimal     @db.Decimal(14, 2)
+  estado           EstadoVenta @default(CONFIRMADA)
+  motivoAnulacion  String?
+
+  detalles         DetalleVenta[]
+  movimientosStock MovimientoStock[]
+
+  @@index([fecha])
+  @@index([usuarioId])
+  @@map("ventas")
+}
+
+model DetalleVenta {
+  id             String   @id @default(cuid())
+  ventaId        String
+  venta          Venta    @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  productoId     String
+  producto       Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  cantidad       Decimal  @db.Decimal(14, 3)
+  precioUnitario Decimal  @db.Decimal(14, 2)
+  subtotal       Decimal  @db.Decimal(14, 2)
+
+  @@map("detalles_venta")
+}
+
+// ─────────────────────────────────────────────────────────
+// Proveedores y compras
+// ─────────────────────────────────────────────────────────
+
+model OrdenCompra {
+  id                    String            @id @default(cuid())
+  proveedorId           String
+  proveedor             Proveedor         @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
+  usuarioId             String
+  usuario               Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  fecha                 DateTime          @default(now())
+  fechaEntregaEstimada  DateTime?
+  estado                EstadoOrdenCompra @default(PENDIENTE)
+
+  detalles         DetalleOrdenCompra[]
+  movimientosStock MovimientoStock[]
+
+  @@index([proveedorId])
+  @@map("ordenes_compra")
+}
+
+model DetalleOrdenCompra {
+  id                    String      @id @default(cuid())
+  ordenCompraId         String
+  ordenCompra           OrdenCompra @relation(fields: [ordenCompraId], references: [id], onDelete: Cascade)
+  productoId            String
+  producto              Producto    @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  cantidadPedida        Decimal     @db.Decimal(14, 3)
+  cantidadRecibida      Decimal     @default(0) @db.Decimal(14, 3)
+  costoUnitarioPactado  Decimal     @db.Decimal(14, 4)
+
+  @@map("detalles_orden_compra")
+}
+
+// ─────────────────────────────────────────────────────────
+// Configuración, alertas e i18n
+// ─────────────────────────────────────────────────────────
+
+model Configuracion {
+  id                     String   @id @default(cuid())
+  nombreComercial        String
+  razonSocial            String?
+  logoUrl                String?
+  colorPrimario          String   @default("#00478D")
+  colorSecundario        String   @default("#006A68")
+  direccion              String?
+  telefono               String?
+  email                  String?
+  monedaPredeterminada   Moneda   @default(ARS)
+  formatoFecha           String   @default("DD/MM/YYYY")
+  diasAlertaVencimiento  Int      @default(15)
+  idiomaPredeterminado   Idioma   @default(ES)
+  /// Cada cuánto se envía el informe diario de vencimientos y stock bajo (ver
+  /// alerts.service.verificarVencimientosProximos). El job sigue corriendo
+  /// todos los días, pero solo envía el mail cuando pasó al menos este
+  /// intervalo desde el último envío efectivo.
+  frecuenciaInformeVencimientos FrecuenciaInforme @default(DIARIO)
+  ultimoEnvioInformeVencimientos DateTime?
+  updatedAt              DateTime @updatedAt
+
+  @@map("configuracion")
+}
+
+model Alerta {
+  id                String        @id @default(cuid())
+  tipo              TipoAlerta
+  productoId        String
+  producto          Producto      @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  loteId            String?
+  lote              Lote?         @relation(fields: [loteId], references: [id], onDelete: Cascade)
+  nivelUrgencia     NivelUrgencia @default(ADVERTENCIA)
+  estado            EstadoAlerta  @default(PENDIENTE)
+  fechaCreacion     DateTime      @default(now())
+  fechaResolucion   DateTime?
+  usuarioResolvioId String?
+  usuarioResolvio   Usuario?      @relation("AlertaResueltaPor", fields: [usuarioResolvioId], references: [id], onDelete: SetNull)
+
+  @@index([tipo, estado])
+  @@index([productoId])
+  @@map("alertas")
+}
+
+/// Traducciones administrables de campos de negocio (no de textos fijos de UI,
+/// que se resuelven por i18next en el frontend). namespace agrupa el tipo de
+/// campo (ej. "unidad_medida", "medio_pago", "categoria") y clave identifica
+/// el registro u opción (id de la entidad, o el código de un enum/valor fijo).
+model Traduccion {
+  id        String @id @default(cuid())
+  namespace String
+  clave     String
+  idioma    Idioma
+  valor     String
+
+  @@unique([namespace, clave, idioma])
+  @@map("traducciones")
+}

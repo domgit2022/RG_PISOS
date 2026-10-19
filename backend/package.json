@@ -1,0 +1,60 @@
+{
+  "name": "rg-pisos-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "node node_modules/prisma/build/index.js generate && tsc -p tsconfig.json && node node_modules/tsc-alias/dist/bin/index.js -p tsconfig.json && node scripts/copy-prisma-client.mjs",
+    "start": "node dist/server.js",
+    "prisma:generate": "node node_modules/prisma/build/index.js generate",
+    "prisma:migrate": "node node_modules/prisma/build/index.js migrate dev",
+    "prisma:deploy": "node node_modules/prisma/build/index.js migrate deploy",
+    "prisma:studio": "node node_modules/prisma/build/index.js studio",
+    "seed": "tsx prisma/seed.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.3",
+    "@supabase/supabase-js": "^2.112.4",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "multer": "^2.3.0",
+    "node-cron": "^4.6.0",
+    "nodemailer": "^9.0.6",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/morgan": "^1.9.9",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^22.10.5",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^8.0.1",
+    "prisma": "^6.16.3",
+    "tsc-alias": "^1.9.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "esbuild@0.28.2": true,
+    "prisma@6.19.3": true
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}
