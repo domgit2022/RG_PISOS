@@ -19,7 +19,7 @@
     "dev:migrate": "node scripts/con-entorno.mjs .env.development node node_modules/prisma/build/index.js migrate dev",
     "dev:seed": "node scripts/con-entorno.mjs .env.development tsx prisma/seed.ts",
     "backup": "node scripts/backup.mjs",
-    "prd:deploy": "npm run backup && npm run build && npm run prisma:deploy && npm run seed"
+    "prd:deploy": "npm run backup && npm --prefix ../frontend run build && npm run build && npm run prisma:deploy && npm run seed"
   },
   "dependencies": {
     "@prisma/client": "^6.16.3",
