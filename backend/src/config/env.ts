@@ -1,4 +1,5 @@
 import "dotenv/config";
+import path from "node:path";
 import { z } from "zod";
 import { zBooleanFlexible } from "@/lib/zod-helpers.js";
 
@@ -49,6 +50,11 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   SUPABASE_STORAGE_BUCKET: z.string().default("branding"),
+  // Servidor propio (sin Supabase): carpeta donde se guardan logo y fotos.
+  UPLOADS_DIR: z.string().default(path.resolve(process.cwd(), "uploads")),
+  // Si existe, el backend sirve también la web ya compilada (npm run build
+  // en frontend/), así todo el sistema queda en un solo puerto.
+  FRONTEND_DIST_DIR: z.string().default(path.resolve(process.cwd(), "../frontend/dist")),
 });
 
 const parsedEnv = envSchema.parse(process.env);

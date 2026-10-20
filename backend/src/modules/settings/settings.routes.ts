@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma.js";
 import { asyncHandler } from "@/middleware/error-handler.js";
 import { requireAuth, requirePermiso } from "@/middleware/auth.js";
 import { HttpError } from "@/lib/http-error.js";
-import { subirArchivoPublico } from "@/lib/supabase-storage.js";
+import { subirArchivoPublico } from "@/lib/storage.js";
 import { diagnosticoMail, enviarInformePrueba } from "@/modules/alerts/alerts.service.js";
 
 export const settingsRouter = Router();

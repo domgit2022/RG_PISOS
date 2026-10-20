@@ -1,13 +1,19 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { env } from "@/config/env.js";
 import { HttpError } from "@/lib/http-error.js";
 
 /**
- * Sube archivos (hoy: el logo del comercio) a Supabase Storage en vez del
- * disco local del servidor. Necesario para que el logo sobreviva un
- * redeploy en hostings con disco efímero (Render, Railway free tier, etc).
- * Usa la service_role key porque corre en el backend, nunca en el browser.
+ * Guarda archivos públicos (logo del comercio, fotos de productos).
+ *
+ * - Con Supabase configurado (SUPABASE_SERVICE_ROLE_KEY): van a Supabase
+ *   Storage, necesario en hostings con disco efímero (Render, etc).
+ * - Sin Supabase (servidor propio en una PC del local): van a la carpeta
+ *   UPLOADS_DIR del disco y el backend los sirve en /uploads/...
  */
+export const usaSupabaseStorage = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
+
 function getClient() {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
     throw new HttpError(
@@ -35,7 +41,7 @@ async function asegurarBucket() {
   bucketVerificado = true;
 }
 
-export async function subirArchivoPublico(buffer: Buffer, nombreArchivo: string, contentType: string) {
+async function subirASupabase(buffer: Buffer, nombreArchivo: string, contentType: string) {
   await asegurarBucket();
   const client = getClient();
 
@@ -47,4 +53,18 @@ export async function subirArchivoPublico(buffer: Buffer, nombreArchivo: string,
 
   const { data } = client.storage.from(env.SUPABASE_STORAGE_BUCKET).getPublicUrl(nombreArchivo);
   return data.publicUrl;
+}
+
+async function guardarEnDisco(buffer: Buffer, nombreArchivo: string) {
+  // basename: el nombre nunca puede escaparse de la carpeta de uploads.
+  const nombreSeguro = path.basename(nombreArchivo);
+  await fs.mkdir(env.UPLOADS_DIR, { recursive: true });
+  await fs.writeFile(path.join(env.UPLOADS_DIR, nombreSeguro), buffer);
+  return `/uploads/${encodeURIComponent(nombreSeguro)}`;
+}
+
+export async function subirArchivoPublico(buffer: Buffer, nombreArchivo: string, contentType: string) {
+  return usaSupabaseStorage
+    ? subirASupabase(buffer, nombreArchivo, contentType)
+    : guardarEnDisco(buffer, nombreArchivo);
 }

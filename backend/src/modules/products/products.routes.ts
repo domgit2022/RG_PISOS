@@ -8,7 +8,7 @@ import { requireAuth, requirePermiso } from "@/middleware/auth.js";
 import { zBooleanFlexible } from "@/lib/zod-helpers.js";
 import { ocultarCostoSiCorresponde } from "@/lib/visibility.js";
 import { HttpError } from "@/lib/http-error.js";
-import { subirArchivoPublico } from "@/lib/supabase-storage.js";
+import { subirArchivoPublico } from "@/lib/storage.js";
 import * as productsService from "./products.service.js";
 
 export const productsRouter = Router();

@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { PrismaClient } from "@prisma/client";
-import { subirArchivoPublico } from "../src/lib/supabase-storage.js";
+import { PrismaClient } from "../src/generated/prisma/index.js";
+import { subirArchivoPublico, usaSupabaseStorage } from "../src/lib/storage.js";
 
 const prisma = new PrismaClient();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -190,7 +190,7 @@ async function main() {
   // a Storage en vez de reemplazarlo por el genérico, para no perder un logo
   // ya personalizado por el administrador.
   const configActual = await prisma.configuracion.findFirst();
-  if (configActual?.logoUrl?.startsWith("/uploads/")) {
+  if (usaSupabaseStorage && configActual?.logoUrl?.startsWith("/uploads/")) {
     const nombreArchivo = path.basename(configActual.logoUrl);
     const rutaLocal = path.resolve(__dirname, "../uploads", nombreArchivo);
     const ext = path.extname(nombreArchivo).toLowerCase();
