@@ -2,12 +2,16 @@ import axios from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 
 /**
- * Sin VITE_API_URL explícito, se arma la URL de la API a partir del host con
- * el que se accedió al frontend (localhost en la PC, la IP de la red local
- * desde el celular), así funciona en ambos casos sin tocar configuración.
+ * Sin VITE_API_URL explícito:
+ * - Compilado (servidor propio): la web la sirve el mismo backend, así que la
+ *   API está en el mismo origen. Funciona igual por localhost, por la IP de
+ *   la red local o por la dirección HTTPS de Tailscale.
+ * - En desarrollo (Vite): se arma con el host con el que se accedió y el
+ *   puerto 4000.
  */
 function resolveApiBaseUrl() {
   if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (import.meta.env.PROD) return `${window.location.origin}/api`;
   return `${window.location.protocol}//${window.location.hostname}:4000/api`;
 }
 
