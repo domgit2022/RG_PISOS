@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, Plus, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil, Plus, SlidersHorizontal, X } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import type { Almacen, Lote, Proveedor } from "@/lib/types";
 
@@ -489,8 +489,8 @@ export function CargaStockForm({
           disabled={cargar.isPending}
           className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary disabled:opacity-60"
         >
-          <Plus size={16} />
-          Cargar stock
+          <Pencil size={16} />
+          {t("common.save")}
         </button>
       </div>
     </div>
