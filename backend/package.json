@@ -7,7 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "node scripts/con-entorno.mjs .env.development tsx watch src/server.ts",
     "build": "node node_modules/prisma/build/index.js generate && tsc -p tsconfig.json && node node_modules/tsc-alias/dist/bin/index.js -p tsconfig.json && node scripts/copy-prisma-client.mjs",
     "start": "node dist/server.js",
     "prisma:generate": "node node_modules/prisma/build/index.js generate",
@@ -15,7 +15,11 @@
     "prisma:deploy": "node node_modules/prisma/build/index.js migrate deploy",
     "prisma:studio": "node node_modules/prisma/build/index.js studio",
     "seed": "tsx prisma/seed.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev:migrate": "node scripts/con-entorno.mjs .env.development node node_modules/prisma/build/index.js migrate dev",
+    "dev:seed": "node scripts/con-entorno.mjs .env.development tsx prisma/seed.ts",
+    "backup": "node scripts/backup.mjs",
+    "prd:deploy": "npm run backup && npm run build && npm run prisma:deploy && npm run seed"
   },
   "dependencies": {
     "@prisma/client": "^6.16.3",

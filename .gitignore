@@ -18,3 +18,5 @@ backend/uploads/
 .vscode/*
 !.vscode/extensions.json
 .idea
+backend/uploads-dev/
+backend/backups/
